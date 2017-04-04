@@ -246,7 +246,7 @@ io.sockets.on("connection", function (socket) {
 			// avatar
 
 
- 			avataria({}, (err, results) => {
+ 			avataria({}, functin(err, results){
 				var avatar = "data:image/png;base64,"  + results.base64;
 				var currentdate = new Date();
 				people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "createdTime" : currentdate, "avatar" : avatar };
