@@ -22,6 +22,29 @@ const npid = require("npid")
 	 eye: 'blue'
  };
 
+// const a = () => {
+// 	console.log('async')
+// 	const promise = new Promise((resolve) => {
+// 		avataria({}, (err, results) => {
+// 		  	// console.log('result', results.base64);
+// 		  	resolve(results.base64);
+// 		});
+// 	});
+// 	promise.then(a => );
+//
+//  	// 	var avatar = await new Promise((resolve) => {
+//  	// 	avataria({}, (err, results) => {
+//  	// 	  console.log(results.base64);
+//  	// 	  resolve(results.base64);
+//  	// 		});
+//  	// 	})
+//  	// 	console.log(avatar);
+// 	}
+// 	a();
+//
+// 	var avatr = a;
+
+
  // call the method
 
 app.use(bodyParser.json());
@@ -198,27 +221,10 @@ function purge(s, action) {
 io.sockets.on("connection", function (socket) {
 	console.log("CONNECTED : " + socket.id);
 
-	socket.on("joinserver", function(name, device) {
+
+	socket.on("joinserver", function (name, device) {
 		console.log("joinserver", name, device);
-
-
-
-
-
-		var avatar = new Promise((resolve) => {
-		avataria({}, (err, results) => {
-		  //console.log(results.base64);
-		  resolve(results.base64);
-		});
-		});
-		console.log(avatar);
-
 		var avatar = 1;
-
-
-
-
-
 		var exists = false;
 		var ownerRoomID = inRoomID = null;
 
@@ -238,19 +244,24 @@ io.sockets.on("connection", function (socket) {
 			socket.emit("exists", {msg: "The username already exists, please pick another one.", proposedName: proposedName});
 		} else {
 			// avatar
-			//var avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAklEQVR4AewaftIAAAHpSURBVO3BsU0bYQCG4TevrssGkVK7PGZgBG9AlRVObpAb5C28AS0tJXRx6TozpL1khh8J68T3Pc+3t7e3f1QsqWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJJRZuoYfvzgVHPD09skVQ0qWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJNfDH784Et2p8PjHp+eGLUcVkYIRVNKppUNKloUtGkoklFk4omFU0qmlQ0qWgTG3ZcFobtZMR8Xdmq47Lw2aSiSUWTiiYVTSqaVDSpaFLRpKJJRZOKJhVt4kb25wPDdjLq5++/jHh5f2fUj1/3jJqvK7fweDoxQiqaVDSpaFLRpKJJRZOKJhVNKppUNKloEx9wXBZGzYy77GTUn7vvjPhxd8+o+bqyVcdlYYRUNKloUtGkoklFk4omFU0qmlQ0qWhS0aSiTWzYfF3ZostObmG+rnw2qWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJJRZv4gMfTiVHHZeEWLjv5bPN1ZdRlJ1skFU0qmlQ0qWhS0aSiSUWTiiYVTSqaVDSpaBM38ng68VXszwdGzdeVLZKKJhVNKppUNKloUtGkoklFk4omFU0qmlS0iXD784FR83Vl1MvrK1skFU0qmlQ0qWhS0aSiSUWTiiYVTSqaVLT/hpQ60Ovgu+4AAAAASUVORK5CYII=";
-			var currentdate = new Date();
-			people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "createdTime" : currentdate, "avatar" : avatar };
-			socket.emit("update", "You have connected to the server.");
-			io.sockets.emit("update", people[socket.id].name + " is online.")
-			sizePeople = _.size(people);
-			sizeRooms = _.size(rooms);
-			io.sockets.emit("update-people", {people: people, count: sizePeople});
-			socket.emit("roomList", {rooms: rooms, count: sizeRooms});
-			socket.emit("joined"); //extra emit for GeoLocation
-			sockets.push(socket);
+
+
+ 			avataria({}, (err, results) => {
+				var avatar = "data:image/png;base64,"  + results.base64;
+				var currentdate = new Date();
+				people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "createdTime" : currentdate, "avatar" : avatar };
+				socket.emit("update", "You have connected to the server.");
+				io.sockets.emit("update", people[socket.id].name + " is online.")
+				sizePeople = _.size(people);
+				sizeRooms = _.size(rooms);
+				io.sockets.emit("update-people", {people: people, count: sizePeople});
+				socket.emit("roomList", {rooms: rooms, count: sizeRooms});
+				socket.emit("joined"); //extra emit for GeoLocation
+				sockets.push(socket);
+ 			});
 		}
 	});
+
 
 	socket.on("getOnlinePeople", function(fn) {
 		console.log("getOnlinePeople");
@@ -270,8 +281,10 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("send", function(msTime, msg) {
 		//process.exit(1);
+		console.log("Send===", msTime, msg);
 		var re = /^[w]:.*:/;
 		var whisper = re.test(msg);
+		console.log("whisper===", whisper);
 		var whisperStr = msg.split(":");
 		var found = false;
 		if (whisper) {
@@ -298,7 +311,9 @@ io.sockets.on("connection", function (socket) {
 				socket.emit("update", "Can't find " + whisperTo);
 			}
 		} else {
-			if (io.sockets.manager.roomClients[socket.id]['/'+socket.room] !== undefined ) {
+			console.log("ROOM", io.sockets.adapter.sids[socket.id][socket.room]);
+			console.log("ROOM2", io.sockets.adapter.sids, socket.id, socket.room);
+			if (io.sockets.adapter.sids[socket.id][socket.room] !== undefined ) {
 				io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg);
 				socket.emit("isTyping", false);
 				if (_.size(chatHistory[socket.room]) > 10) {
@@ -306,9 +321,9 @@ io.sockets.on("connection", function (socket) {
 				} else {
 					chatHistory[socket.room].push(people[socket.id].name + ": " + msg);
 				}
-		    	} else {
+		   } else {
 				socket.emit("update", "Please connect to a room.");
-		    	}
+		   }
 		}
 	});
 
@@ -329,6 +344,7 @@ io.sockets.on("connection", function (socket) {
 			var room = new Room(name, id, socket.id);
 			rooms[id] = room;
 			sizeRooms = _.size(rooms);
+			console.log("Room list==", rooms);
 			io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms});
 			//add room to socket, and auto join the creator of the room
 			socket.room = name;
@@ -363,6 +379,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("joinRoom", function(id) {
+		console.log("joinRoom==", id);
 		if (typeof people[socket.id] !== "undefined") {
 			var room = rooms[id];
 			if (socket.id === room.owner) {
