@@ -5,37 +5,41 @@ const port = 3000;
 const io = require('socket.io')(server);
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
+var Room = require('./room.js')
 const npid = require("npid")
 , uuid = require('node-uuid')
 , _ = require('underscore')._;
 
-var avatar = require('avatar-generator')({
-    //Optional settings. Default settings in 'settings.js'
-    order:'background face clothes head hair eye mouth'.split(' '), //order in which sprites should be combined
-    images:require('path').join(__dirname,'./img'), // path to sprites
-    convert:'convert' //Path to imagemagick convert
-});
 
-avatar('@user', 'male', 400).toBuffer(function (err, buffer) {
-  console.log(buffer.toString('base64'));
-});
+ const avataria = require('avataria');
+ // specify options, none are required
 
-	app.use(bodyParser.json());
-	app.use(methodOverride());
-	app.use(express.static(__dirname + '/public'));
-	app.use('/components', express.static(__dirname + '/components'));
-	app.use('/js', express.static(__dirname + '/js'));
-	app.use('/icons', express.static(__dirname + '/icons'));
-	app.set('views', __dirname + '/views');
-	app.engine('html', require('ejs').renderFile);
+ const options = {
+	 species: 'human',
+	 gender: 'male',
+	 hair: 'brown',
+	 skin: 'pale',
+	 eye: 'blue'
+ };
 
-	/* Store process-id (as priviledged user) */
-	try {
-	    npid.create('/var/run/advanced-chat.pid', true);
-	} catch (err) {
-	    console.log(err);
-	    //process.exit(1);
-	}
+ // call the method
+
+app.use(bodyParser.json());
+app.use(methodOverride());
+app.use(express.static(__dirname + '/public'));
+app.use('/components', express.static(__dirname + '/components'));
+app.use('/js', express.static(__dirname + '/js'));
+app.use('/icons', express.static(__dirname + '/icons'));
+app.set('views', __dirname + '/views');
+app.engine('html', require('ejs').renderFile);
+
+/* Store process-id (as priviledged user) */
+try {
+    npid.create('/var/run/advanced-chat.pid', true);
+} catch (err) {
+    console.log(err);
+    //process.exit(1);
+}
 
 
 app.get('/', function(req, res) {
@@ -196,6 +200,25 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("joinserver", function(name, device) {
 		console.log("joinserver", name, device);
+
+
+
+
+
+		var avatar = new Promise((resolve) => {
+		avataria({}, (err, results) => {
+		  //console.log(results.base64);
+		  resolve(results.base64);
+		});
+		});
+		console.log(avatar);
+
+		var avatar = 1;
+
+
+
+
+
 		var exists = false;
 		var ownerRoomID = inRoomID = null;
 
@@ -214,8 +237,10 @@ io.sockets.on("connection", function (socket) {
 			} while (!exists);
 			socket.emit("exists", {msg: "The username already exists, please pick another one.", proposedName: proposedName});
 		} else {
+			// avatar
+			//var avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAklEQVR4AewaftIAAAHpSURBVO3BsU0bYQCG4TevrssGkVK7PGZgBG9AlRVObpAb5C28AS0tJXRx6TozpL1khh8J68T3Pc+3t7e3f1QsqWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJJRZuoYfvzgVHPD09skVQ0qWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJNfDH784Et2p8PjHp+eGLUcVkYIRVNKppUNKloUtGkoklFk4omFU0qmlQ0qWgTG3ZcFobtZMR8Xdmq47Lw2aSiSUWTiiYVTSqaVDSpaFLRpKJJRZOKJhVt4kb25wPDdjLq5++/jHh5f2fUj1/3jJqvK7fweDoxQiqaVDSpaFLRpKJJRZOKJhVNKppUNKloEx9wXBZGzYy77GTUn7vvjPhxd8+o+bqyVcdlYYRUNKloUtGkoklFk4omFU0qmlQ0qWhS0aSiTWzYfF3ZostObmG+rnw2qWhS0aSiSUWTiiYVTSqaVDSpaFLRpKJJRZv4gMfTiVHHZeEWLjv5bPN1ZdRlJ1skFU0qmlQ0qWhS0aSiSUWTiiYVTSqaVDSpaBM38ng68VXszwdGzdeVLZKKJhVNKppUNKloUtGkoklFk4omFU0qmlS0iXD784FR83Vl1MvrK1skFU0qmlQ0qWhS0aSiSUWTiiYVTSqaVLT/hpQ60Ovgu+4AAAAASUVORK5CYII=";
 			var currentdate = new Date();
-			people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "createdTime" : currentdate };
+			people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "createdTime" : currentdate, "avatar" : avatar };
 			socket.emit("update", "You have connected to the server.");
 			io.sockets.emit("update", people[socket.id].name + " is online.")
 			sizePeople = _.size(people);
@@ -296,6 +321,7 @@ io.sockets.on("connection", function (socket) {
 
 	//Room functions
 	socket.on("createRoom", function(name) {
+		console.log("createRoom", name);
 		if (people[socket.id].inroom) {
 			socket.emit("update", "You are in a room. Please leave it first to create your own.");
 		} else if (!people[socket.id].owns) {
