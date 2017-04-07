@@ -10,12 +10,14 @@
 - Open (http://localhost:3000)
 
 ## Features
-- Login
-- Create room
-- Send private message
-- Support for Website and Mobile
-- Multiple Chat
-- Show "is typing" when someone typing
+[x] Login
+[x] Create room
+[x] Send private message
+[x] Support for Website and Mobile
+[x] Multiple Chat
+[x] Show "is typing" when someone typing
+[ ] Store users
+[ ] Push notification to user (Firebase)
 
 ## License
 - [MIT](LICENSE)
