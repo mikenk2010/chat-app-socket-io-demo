@@ -2,7 +2,7 @@
 
 
 ### DEMO
-![Image](https://media.giphy.com/media/3oKIPgK70dQxrkKa0E/giphy.gif)
+![Image](https://gifyu.com/images/demo_chatapp.gif)
 
 ## Installation
 - `npm install `
