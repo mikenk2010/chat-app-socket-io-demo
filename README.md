@@ -2,7 +2,7 @@
 
 
 ### DEMO
-![Image](http://i.imgur.com/5qYl0gC.png)
+![Image](https://media.giphy.com/media/3oKIPgK70dQxrkKa0E/giphy.gif)
 
 ## Installation
 - `npm install `
