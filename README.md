@@ -7,6 +7,7 @@
 ## Installation
 - `npm install `
 - `node server.js`
+- Open (http://localhost:3000)
 
 ## Features
 - Login
